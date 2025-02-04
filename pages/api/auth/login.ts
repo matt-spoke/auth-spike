@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 // TODO remove creds
 const authEndpoint = 'https://shopify.com/authentication/1360134207/oauth/authorize';
-const clientId = 'shp_385b7444-f896-4a2f-8d4d-af5cdd459a5c';
+const clientId = process.env.SHOPIFY_CLIENT_ID!;
 const redirectUri = 'https://swan-great-pup.ngrok-free.app/api/auth/callback';
 
 export async function generateCodeVerifier() {

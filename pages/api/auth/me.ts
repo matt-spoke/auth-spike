@@ -1,7 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
-const SHOPIFY_CUSTOMER_ACCOUNT_DOMAIN = 'https://shopify.com/1360134207'
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const access_token = req.cookies.newAccountsToken; // Extract from cookies
 
@@ -14,7 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     console.log('ME??')
 
-    const response = await fetch(`${SHOPIFY_CUSTOMER_ACCOUNT_DOMAIN}/account/customer/api/2025-01/graphql`, {
+    const response = await fetch(`${process.env.SHOPIFY_CUSTOMER_ACCOUNT_DOMAIN}/account/customer/api/2025-01/graphql`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
