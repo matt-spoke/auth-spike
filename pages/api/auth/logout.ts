@@ -1,7 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
 
-const logoutEndpoint = 'https://shopify.com/authentication/1360134207/logout';
-
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const idToken = req.cookies.idToken; // Extract from cookies
 
@@ -11,21 +9,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const logoutUrl = new URL(logoutEndpoint);
-    logoutUrl.searchParams.append('id_token_hint', idToken );
-    const response = await fetch(logoutUrl);
-    
-    if (!response.ok) {
-        return res.status(response.status).json({ error: 'Failed to logout', e: response.statusText })
-    }
-
-    console.log('logged out')
-
     res.setHeader('Set-Cookie', [
         'idToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
         'newAccountsToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
       ]);
-    res.status(200).json({})
+    res.redirect('https://swan-great-pup.ngrok-free.app/new-accounts')
 
   } catch (error) {
     const e = error as Error;

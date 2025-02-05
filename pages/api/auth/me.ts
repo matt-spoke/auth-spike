@@ -8,8 +8,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // const { SHOPIFY_CUSTOMER_ACCOUNT_DOMAIN } = process.env;
-
     console.log('ME??')
 
     const response = await fetch(`${process.env.SHOPIFY_CUSTOMER_ACCOUNT_DOMAIN}/account/customer/api/2025-01/graphql`, {

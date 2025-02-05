@@ -55,15 +55,16 @@ export default async function handler(
     console.log(
       "access token",
       access_token,
-      expires_in,
-      id_token,
-      refresh_token
     );
+
+    console.log('expires in ', expires_in)
+    console.log('refresh token', refresh_token)
+    console.log('id token', id_token)
 
     // Store the access token in a secure cookie or session (not shown here)
     res.setHeader("Set-Cookie", [
       `newAccountsToken=${access_token}; HttpOnly; Path=/; Secure`,
-      `idToken=${id_token}; HttpOnly; Path=/; Secure`,
+      `idToken=${id_token}; Path=/; Secure`,
     //   `expiresIn=${expires_in}; HttpOnly; Path=/; Secure`,
     //   `refreshToken=${refresh_token}; HttpOnly; Path=/; Secure`,
     ]);
