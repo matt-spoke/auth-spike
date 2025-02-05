@@ -1,4 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
+import { encrypt } from "../../../utils/encryption";
+import { serialize } from "cookie";
 
 const authEndpoint = 'https://shopify.com/authentication/1360134207/oauth/authorize';
 const clientId = process.env.SHOPIFY_CLIENT_ID!;
@@ -54,7 +56,7 @@ export async function generateCodeVerifier() {
     return nonce;
   }
   
-  const getAuthUrl = () => {
+  const getAuthUrl = (nonce: string) => {
     const authorizationRequestUrl = new URL(
       authEndpoint,
     );
@@ -87,8 +89,6 @@ export async function generateCodeVerifier() {
       state,
     );
   
-    const nonce = generateNonce(16); // I guess returned as prop?
-  
     console.log('generated nonce', nonce)
   
     authorizationRequestUrl.searchParams.append(
@@ -99,7 +99,18 @@ export async function generateCodeVerifier() {
     return authorizationRequestUrl
   }
 
-export default function handler(req: NextApiRequest, res: NextApiResponse) {
-  res.redirect(getAuthUrl().toString());
+export default function handler(req: NextApiRequest, res: NextApiResponse) {  
+  const nonce = generateNonce(16);
+  const encryptedNonce = encrypt(nonce);
+
+  res.setHeader('Set-Cookie', serialize('auth_nonce', encryptedNonce, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 300
+  }));
+
+  res.redirect(getAuthUrl(nonce).toString());
 }
 

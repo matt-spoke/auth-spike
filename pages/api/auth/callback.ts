@@ -1,5 +1,7 @@
 import "@shopify/shopify-api/adapters/node";
+import { parse } from "cookie";
 import { NextApiRequest, NextApiResponse } from "next";
+import { decrypt } from "../../../utils/encryption";
 
 const clientId = process.env.SHOPIFY_CLIENT_ID!;
 const redirectUri = "https://swan-great-pup.ngrok-free.app/api/auth/callback";
@@ -7,10 +9,29 @@ const redirectUri = "https://swan-great-pup.ngrok-free.app/api/auth/callback";
 const tokenEndpoint =
   "https://shopify.com/authentication/1360134207/oauth/token";
 
+export async function getNonce(token: string) {
+  return decodeJwt(token).payload.nonce;
+}
+
+export function decodeJwt(token: string) {
+  const [header, payload, signature] = token.split('.');
+
+  const decodedHeader = JSON.parse(atob(header));
+  const decodedPayload = JSON.parse(atob(payload));
+
+  return {
+    header: decodedHeader,
+    payload: decodedPayload,
+    signature,
+  };
+}
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
+  const cookies = parse(req.headers.cookie || '');
+  
   const { code } = req.query;
 
   if (!code) {
@@ -18,7 +39,7 @@ export default async function handler(
   }
 
   try {
-    // console.log("code", code);
+    const decryptedNonce = decrypt(cookies.auth_nonce!);  
 
     const body = new URLSearchParams();
     body.append("client_id", clientId);
@@ -60,6 +81,15 @@ export default async function handler(
     console.log('expires in ', expires_in)
     console.log('refresh token', refresh_token)
     console.log('id token', id_token)
+
+    const returnedNonce = await getNonce(id_token);
+
+    console.log('decryptedNonce (from session storage)', decryptedNonce);
+    console.log('returned nonce', returnedNonce);
+
+    if (decryptedNonce !== returnedNonce) {
+      return res.status(403).json({ error: 'Invalid nonce' });
+    }
 
     // Store the access token in a secure cookie or session (not shown here)
     res.setHeader("Set-Cookie", [
