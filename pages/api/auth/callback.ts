@@ -1,5 +1,5 @@
 import "@shopify/shopify-api/adapters/node";
-import { parse } from "cookie";
+import { parse, serialize } from "cookie";
 import { NextApiRequest, NextApiResponse } from "next";
 import { decrypt } from "../../../utils/encryption";
 
@@ -32,13 +32,23 @@ export default async function handler(
 ) {
   const cookies = parse(req.headers.cookie || '');
   
-  const { code } = req.query;
+  const { code, state } = req.query;
 
   if (!code) {
     return res.status(400).json({ error: "Authorization code missing" });
   }
 
   try {
+    // Verify state
+    const decryptedState = decrypt(cookies.auth_state!);
+
+    console.log('decryptedState (from session storage)', decryptedState);
+    console.log('returned state', state);
+    
+    if (!decryptedState || decryptedState !== state) {
+      return res.status(403).json({ error: 'Invalid state parameter' });
+    }
+    
     const decryptedNonce = decrypt(cookies.auth_nonce!);  
 
     const body = new URLSearchParams();
@@ -68,8 +78,6 @@ export default async function handler(
         });
     }
 
-    // console.log('RESPONSE', response);
-
     const { access_token, expires_in, id_token, refresh_token } =
       await response.json();
 
@@ -87,6 +95,7 @@ export default async function handler(
     console.log('decryptedNonce (from session storage)', decryptedNonce);
     console.log('returned nonce', returnedNonce);
 
+    // Verify nonce
     if (decryptedNonce !== returnedNonce) {
       return res.status(403).json({ error: 'Invalid nonce' });
     }
@@ -97,6 +106,9 @@ export default async function handler(
       `idToken=${id_token}; Path=/; Secure`,
     //   `expiresIn=${expires_in}; HttpOnly; Path=/; Secure`,
     //   `refreshToken=${refresh_token}; HttpOnly; Path=/; Secure`,
+      serialize('auth_state', '', { maxAge: -1, path: '/' }),
+      serialize('auth_nonce', '', { maxAge: -1, path: '/' })
+
     ]);
     // res.setHeader("Set-Cookie", `refreshToken=${access_token}; HttpOnly; Path=/; Secure`);
 
