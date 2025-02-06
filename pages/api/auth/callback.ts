@@ -4,8 +4,11 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { decrypt } from "../../../utils/encryption";
 
 const clientId = process.env.SHOPIFY_CLIENT_ID!;
+// const clientSecret = process.env.SHOPIFY_CLIENT_SECRET;  // for confidential clients
 const redirectUri = 'https://swan-great-pup.ngrok-free.app/api/auth/callback';
 const tokenEndpoint = 'https://shopify.com/authentication/1360134207/oauth/token';
+
+// const credentials = btoa(`${clientId}:${clientSecret}`);  // for confidential clients
 
 export async function getNonce(token: string) {
   return decodeJwt(token).payload.nonce;
@@ -58,7 +61,7 @@ export default async function handler(
     const headers = {
       "content-type": "application/x-www-form-urlencoded",
       // Confidential Client
-      // 'Authorization': 'Basic `<credentials>`'
+      // 'Authorization': `Basic ${credentials}`
     };
 
     const response = await fetch(tokenEndpoint, {

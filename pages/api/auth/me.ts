@@ -3,7 +3,10 @@ import { NextApiHandler, NextApiRequest, NextApiResponse } from "next";
 import { serialize } from "cookie";
 
 const clientId = process.env.SHOPIFY_CLIENT_ID!;
+// const clientSecret = process.env.SHOPIFY_CLIENT_SECRET; // for confidential clients
 const tokenEndpoint = 'https://shopify.com/authentication/1360134207/oauth/token';
+
+// const credentials = btoa(`${clientId}:${clientSecret}`); // for confidential clients
 
 interface ShopifyTokens {
   access_token: string;
@@ -35,7 +38,7 @@ async function refreshShopifyToken(refreshToken: string): Promise<ShopifyTokens 
     const headers = {
       "content-type": "application/x-www-form-urlencoded",
       // Confidential Client
-      // 'Authorization': 'Basic `<credentials>`'
+      // 'Authorization': `Basic ${credentials}`
     };
 
     console.log('refresging token', tokenEndpoint)
@@ -97,8 +100,6 @@ export const withTokenRefresh = (handler: NextApiHandler) => {
     }
   };
 };
-
-// export default async function handler(req: NextApiRequest, res: NextApiResponse) {
 
 const handler = async (req: NextApiRequest, res: NextApiResponse) => {
   const access_token = req.cookies.newAccountsToken; // Extract from cookies
