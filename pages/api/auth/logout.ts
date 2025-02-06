@@ -1,3 +1,4 @@
+import { serialize } from "cookie";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -10,8 +11,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
   try {
     res.setHeader('Set-Cookie', [
-        'idToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
-        'newAccountsToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT',
+      serialize('idToken', '', { maxAge: -1, path: '/' }),
+      serialize('refreshToken', '', { maxAge: -1, path: '/' }),
+      serialize('newAccountsToken', '', { maxAge: -1, path: '/' })
       ]);
     res.redirect('https://swan-great-pup.ngrok-free.app/new-accounts')
 

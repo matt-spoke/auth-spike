@@ -102,25 +102,25 @@ export default async function handler(
 
     // Store the access token in a secure cookie or session (not shown here)
     res.setHeader("Set-Cookie", [
-      `newAccountsToken=${access_token}; HttpOnly; Path=/; Secure`,
-      `idToken=${id_token}; Path=/; Secure`,
-    //   `expiresIn=${expires_in}; HttpOnly; Path=/; Secure`,
-    //   `refreshToken=${refresh_token}; HttpOnly; Path=/; Secure`,
+      serialize('newAccountsToken', access_token, {httpOnly: true, path: '/', sameSite: 'strict', secure: true, maxAge: expires_in }),
+      serialize('idToken', id_token, { path: '/', secure: true, sameSite: 'strict' }), // not being stored as httpOnly as currently FE wants it in order to logout.  But this probably  could be improved by making the FE go via API?
+      serialize('refreshToken', refresh_token, {httpOnly: true, path: '/', sameSite: 'strict', secure: true }),
       serialize('auth_state', '', { maxAge: -1, path: '/' }),
       serialize('auth_nonce', '', { maxAge: -1, path: '/' })
-
     ]);
-    // res.setHeader("Set-Cookie", `refreshToken=${access_token}; HttpOnly; Path=/; Secure`);
 
     // Redirect to the home page or a dashboard
     res.redirect("/new-accounts");
 
-    // Store the access token securely (e.g., in a session or database)
-    // For simplicity, we'll just return it here
-    res.status(200).json({}); // { accessToken });
+    res.status(200).json({});
   } catch (error) {
+    res.setHeader("Set-Cookie", [
+      serialize('auth_state', '', { maxAge: -1, path: '/' }),
+      serialize('auth_nonce', '', { maxAge: -1, path: '/' })
+    ]);
+
     res
       .status(500)
-      .json({ error: "Failed to authenticate with Shopify", e: error });
+      .json({ error: "Failed to authenticate with Shopify", e: (error as Error).message });
   }
 }
