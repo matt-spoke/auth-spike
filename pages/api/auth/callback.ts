@@ -4,10 +4,8 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { decrypt } from "../../../utils/encryption";
 
 const clientId = process.env.SHOPIFY_CLIENT_ID!;
-const redirectUri = "https://swan-great-pup.ngrok-free.app/api/auth/callback";
-
-const tokenEndpoint =
-  "https://shopify.com/authentication/1360134207/oauth/token";
+const redirectUri = 'https://swan-great-pup.ngrok-free.app/api/auth/callback';
+const tokenEndpoint = 'https://shopify.com/authentication/1360134207/oauth/token';
 
 export async function getNonce(token: string) {
   return decodeJwt(token).payload.nonce;
